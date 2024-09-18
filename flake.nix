@@ -13,48 +13,31 @@
 
       forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f system);
 
-      nixpkgsFor = forAllSystems (system: import nixpkgs { inherit system; });
+      nixpkgsFor = forAllSystems (system: import nixpkgs {
+        inherit system;
+        overlays = [ self.overlays.default ];
+      });
     in
     {
-      packages = forAllSystems (system:
-        let pkgs = nixpkgsFor.${system};
-        in {
-          nix-podman-secrets = pkgs.buildGoModule {
-            pname = "nix-podman-secrets";
-            version = "0.1.0";
+      # packages = forAllSystems (system: with nixpkgsFor.${system}; {
+      #   inherit nix-podman-secrets;
+      # });
 
-            src = ./.;
-            doCheck = false;
+      overlays.default = final: prev: (import ./overlay.nix inputs self) final prev;
 
-            vendorHash = null;
+      # defaultPackage = forAllSystems (system: self.packages.${system}.nix-podman-secrets);
 
-            #outputs = [ "bin" ];
-
-            meta = {
-              description = "Simple tool for podman secrets shell driver to access nix secrets";
-              homepage = "https://github.com/dereulenspiegel/nix-podman-secrets";
-            };
-          };
-        });
-
-      defaultPackage = forAllSystems (system: self.packages.${system}.nix-podman-secrets);
-
-      defaultApp = forAllSystems (system: {
-        type = "app";
-        program = "${self.packages.${system}.nix-podman-secrets}/bin/nix-podman-secrets";
-      });
-
-      nixosModules.default = { lib, config, ... }:
-        with lib;
+      nixosModules.default = (self: { lib, config, nixpkgs, ... }:
         let
           cfg = config.nix-podman-secrets;
         in
         {
           options.nix-podman-secrets = {
-            enable = mkEnableOption "Enable nix-podman-secrets";
+            enable = lib.mkEnableOption "Enable nix-podman-secrets";
           };
-          config = mkIf cfg.enable {
-            systemPackages = [ self.packages.nix-podman-secrets ];
+
+          config = lib.mkIf cfg.enable {
+            systemPackages = [ nixpkgs.nix-podman-secrets ];
 
             environment.etc."containers/containers.conf.d/999_nix-podman-secrets.conf" = {
               enable = cfg.enable;
@@ -63,13 +46,13 @@
                 driver = "shell"
 
                 [secrets.opts]
-                list = ${self.packages.nix-podman-secrets}/bin/nix-podman-secrets list
-                lookup = ${self.packages.nix-podman-secrets}/bin/nix-podman-secrets lookup
-                store = ${self.packages.nix-podman-secrets}/bin/nix-podman-secrets noop
-                delete = ${self.packages.nix-podman-secrets}/bin/nix-podman-secrets noop
+                list = /run/current-system/sw/bin/nix-podman-secrets list
+                lookup = /run/current-system/sw/bin/nix-podman-secrets lookup
+                store = /run/current-system/sw/binn/nix-podman-secrets noop
+                delete = /run/current-system/sw/bin/nix-podman-secrets noop
               '';
             };
           };
-        };
+        }) self;
     };
 }
