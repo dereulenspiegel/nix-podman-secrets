@@ -18,7 +18,6 @@ const (
 )
 
 func main() {
-	cmdName := os.Args[1]
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -30,6 +29,11 @@ func main() {
 			os.Exit(1)
 		}
 	}()
+
+	if len(os.Args) < 2 {
+		panic(errors.New("you need to specify one of the subcommands list lookup or noop"))
+	}
+	cmdName := os.Args[1]
 
 	switch cmdName {
 	case CMD_LIST:
