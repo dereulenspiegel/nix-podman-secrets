@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 )
@@ -37,9 +38,10 @@ func main() {
 
 	switch cmdName {
 	case CMD_LIST:
-		listSecrets()
+		listSecrets(os.Stdout, NIX_SECRET_DIR)
 	case CMD_LOOKUP:
-		lookupSecret()
+		secretId := os.Getenv(ENV_VAR_SECRET_ID)
+		lookupSecret(os.Stdout, NIX_SECRET_DIR, secretId)
 	case CMD_NOOP:
 		fmt.Fprint(os.Stderr, "write access to nix managed secrets is not possible")
 		os.Exit(1)
@@ -48,25 +50,32 @@ func main() {
 	}
 }
 
-func lookupSecret() {
-	secretId := os.Getenv(ENV_VAR_SECRET_ID)
+func lookupSecret(w io.Writer, secretDir, secretId string) {
 	if secretId == "" {
 		panic(errors.New("no SECRET_ID given for lookup"))
 	}
-	secretFilePath := filepath.Join(NIX_SECRET_DIR, secretId)
+	secretFilePath := filepath.Join(secretDir, secretId)
+	secretFilePath, err := filepath.EvalSymlinks(secretFilePath)
+	if err != nil {
+		panic(fmt.Errorf("failed to resolve secrets dir: %s", err))
+	}
 	secretBytes, err := os.ReadFile(secretFilePath)
 	if err != nil {
 		panic(fmt.Errorf("failed to read secret data from filesystem: %s", err))
 	}
-	fmt.Print(string(secretBytes))
+	fmt.Fprint(w, string(secretBytes))
 }
 
-func listSecrets() {
-	secretFiles, err := os.ReadDir(NIX_SECRET_DIR)
+func listSecrets(w io.Writer, secretsDir string) {
+	secretsDir, err := filepath.EvalSymlinks(secretsDir)
+	if err != nil {
+		panic(fmt.Errorf("failed to resolve secrets dir: %s", err))
+	}
+	secretFiles, err := os.ReadDir(secretsDir)
 	if err != nil {
 		panic(fmt.Errorf("can't list nix secrets: %s", err))
 	}
 	for _, secretFile := range secretFiles {
-		fmt.Println(secretFile.Name())
+		fmt.Fprintln(w, secretFile.Name())
 	}
 }
