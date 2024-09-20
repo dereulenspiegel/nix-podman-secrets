@@ -4,5 +4,5 @@ let
   inherit flake-self;
 in
 self: super: {
-  nix-podman-secrets = super.callPackage ./package.nix;
+  nix-podman-secrets = super.callPackage ./package.nix { };
 }

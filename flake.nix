@@ -19,15 +19,15 @@
       });
     in
     {
-      # packages = forAllSystems (system: with nixpkgsFor.${system}; {
-      #   inherit nix-podman-secrets;
-      # });
+
+      packages = forAllSystems (system: with nixpkgsFor.${system};{
+        inherit nix-podman-secrets;
+        default = nix-podman-secrets;
+      });
 
       overlays.default = final: prev: (import ./overlay.nix inputs self) final prev;
 
-      # defaultPackage = forAllSystems (system: self.packages.${system}.nix-podman-secrets);
-
-      nixosModules.default = (self: { lib, config, nixpkgs, ... }:
+      nixosModules.default = (self: { lib, config, pkgs, ... }:
         let
           cfg = config.nix-podman-secrets;
         in
@@ -37,7 +37,7 @@
           };
 
           config = lib.mkIf cfg.enable {
-            systemPackages = [ nixpkgs.nix-podman-secrets ];
+            environment.systemPackages = [ self.packages.${pkgs.system}.default ];
 
             environment.etc."containers/containers.conf.d/999_nix-podman-secrets.conf" = {
               enable = cfg.enable;
@@ -46,10 +46,10 @@
                 driver = "shell"
 
                 [secrets.opts]
-                list = /run/current-system/sw/bin/nix-podman-secrets list
-                lookup = /run/current-system/sw/bin/nix-podman-secrets lookup
-                store = /run/current-system/sw/binn/nix-podman-secrets noop
-                delete = /run/current-system/sw/bin/nix-podman-secrets noop
+                list = "/run/current-system/sw/bin/nix-podman-secrets list"
+                lookup = "/run/current-system/sw/bin/nix-podman-secrets lookup"
+                store = "/run/current-system/sw/bin/nix-podman-secrets noop"
+                delete = "/run/current-system/sw/bin/nix-podman-secrets noop"
               '';
             };
           };
