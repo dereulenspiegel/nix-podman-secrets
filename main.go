@@ -11,6 +11,7 @@ import (
 const (
 	CMD_LIST   = "list"
 	CMD_LOOKUP = "lookup"
+	CMD_STORE  = "store"
 	CMD_NOOP   = "noop"
 
 	NIX_SECRET_DIR = "/run/secrets"
@@ -42,6 +43,9 @@ func main() {
 	case CMD_LOOKUP:
 		secretId := os.Getenv(ENV_VAR_SECRET_ID)
 		lookupSecret(os.Stdout, NIX_SECRET_DIR, secretId)
+	case CMD_STORE:
+		secretId := os.Getenv(ENV_VAR_SECRET_ID)
+		mockStore(os.Stdin, NIX_SECRET_DIR, secretId)
 	case CMD_NOOP:
 		fmt.Fprint(os.Stderr, "write access to nix managed secrets is not possible")
 		os.Exit(1)
@@ -77,5 +81,19 @@ func listSecrets(w io.Writer, secretsDir string) {
 	}
 	for _, secretFile := range secretFiles {
 		fmt.Fprintln(w, secretFile.Name())
+	}
+}
+
+func mockStore(in io.Reader, secretsDir, secretId string) {
+	_, err := io.ReadAll(in)
+	if err != nil {
+		panic(fmt.Errorf("failed to read secret data: %s", err))
+	}
+	secretPath, err := filepath.EvalSymlinks(filepath.Join(secretsDir, secretId))
+	if err != nil {
+		panic(fmt.Errorf("failed to resolve secrets dir: %s", err))
+	}
+	if _, err := os.Stat(secretPath); os.IsNotExist(err) {
+		panic(fmt.Errorf("secret with id %s is not yet created by nix", secretId))
 	}
 }
