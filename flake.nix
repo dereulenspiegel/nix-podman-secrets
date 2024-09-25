@@ -39,19 +39,9 @@
           config = lib.mkIf cfg.enable {
             environment.systemPackages = [ self.packages.${pkgs.system}.default ];
 
-            environment.etc."containers/containers.conf.d/999_nix-podman-secrets.conf" = {
-              enable = cfg.enable;
-              text = ''
-                [secrets]
-                driver = "shell"
-
-                [secrets.opts]
-                list = "/run/current-system/sw/bin/nix-podman-secrets list"
-                lookup = "/run/current-system/sw/bin/nix-podman-secrets lookup"
-                store = "/run/current-system/sw/bin/nix-podman-secrets noop"
-                delete = "/run/current-system/sw/bin/nix-podman-secrets noop"
-              '';
-            };
+            system.activationScripts.syncNixPodmanSecrets = ''
+              /run/current-system/sw/bin/nix-podman-secrets populate
+            '';
           };
         }) self;
     };
