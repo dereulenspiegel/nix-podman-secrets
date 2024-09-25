@@ -9,14 +9,9 @@ import (
 )
 
 const (
-	CMD_LIST   = "list"
-	CMD_LOOKUP = "lookup"
-	CMD_STORE  = "store"
-	CMD_NOOP   = "noop"
-
-	NIX_SECRET_DIR = "/run/secrets"
-
-	ENV_VAR_SECRET_ID = "SECRET_ID"
+	CMD_LOOKUP   = "lookup"
+	CMD_NOOP     = "noop"
+	CMD_POPULATE = "populate"
 )
 
 func main() {
@@ -38,17 +33,16 @@ func main() {
 	cmdName := os.Args[1]
 
 	switch cmdName {
-	case CMD_LIST:
-		listSecrets(os.Stdout, NIX_SECRET_DIR)
 	case CMD_LOOKUP:
-		secretId := os.Getenv(ENV_VAR_SECRET_ID)
+		if len(os.Args) < 3 {
+			panic(errors.New("secret name argument is missing"))
+		}
+		secretId := os.Args[2]
 		lookupSecret(os.Stdout, NIX_SECRET_DIR, secretId)
-	case CMD_STORE:
-		secretId := os.Getenv(ENV_VAR_SECRET_ID)
-		mockStore(os.Stdin, NIX_SECRET_DIR, secretId)
 	case CMD_NOOP:
-		fmt.Fprint(os.Stderr, "write access to nix managed secrets is not possible")
-		os.Exit(1)
+		noop()
+	case CMD_POPULATE:
+		populatePodmanSecretsDB(NIX_SECRET_DIR)
 	default:
 		panic(fmt.Errorf("unsupported command %s", cmdName))
 	}
@@ -70,30 +64,6 @@ func lookupSecret(w io.Writer, secretDir, secretId string) {
 	fmt.Fprint(w, string(secretBytes))
 }
 
-func listSecrets(w io.Writer, secretsDir string) {
-	secretsDir, err := filepath.EvalSymlinks(secretsDir)
-	if err != nil {
-		panic(fmt.Errorf("failed to resolve secrets dir: %s", err))
-	}
-	secretFiles, err := os.ReadDir(secretsDir)
-	if err != nil {
-		panic(fmt.Errorf("can't list nix secrets: %s", err))
-	}
-	for _, secretFile := range secretFiles {
-		fmt.Fprintln(w, secretFile.Name())
-	}
-}
-
-func mockStore(in io.Reader, secretsDir, secretId string) {
-	_, err := io.ReadAll(in)
-	if err != nil {
-		panic(fmt.Errorf("failed to read secret data: %s", err))
-	}
-	secretPath, err := filepath.EvalSymlinks(filepath.Join(secretsDir, secretId))
-	if err != nil {
-		panic(fmt.Errorf("failed to resolve secrets dir: %s", err))
-	}
-	if _, err := os.Stat(secretPath); os.IsNotExist(err) {
-		panic(fmt.Errorf("secret with id %s is not yet created by nix", secretId))
-	}
+func noop() {
+	os.Exit(0)
 }
