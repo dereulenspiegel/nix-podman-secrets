@@ -27,22 +27,13 @@
 
       overlays.default = final: prev: (import ./overlay.nix inputs self) final prev;
 
-      nixosModules.default = (self: { lib, config, pkgs, ... }:
-        let
-          cfg = config.nix-podman-secrets;
-        in
-        {
-          options.nix-podman-secrets = {
-            enable = lib.mkEnableOption "Enable nix-podman-secrets";
-          };
+      nixosModules.default = (self: { lib, config, pkgs, ... }: {
+        environment.systemPackages = [ self.packages.${pkgs.system}.default ];
 
-          config = lib.mkIf cfg.enable {
-            environment.systemPackages = [ self.packages.${pkgs.system}.default ];
+        system.activationScripts.syncNixPodmanSecrets = ''
+          /run/current-system/sw/bin/nix-podman-secrets populate
+        '';
 
-            system.activationScripts.syncNixPodmanSecrets = ''
-              /run/current-system/sw/bin/nix-podman-secrets populate
-            '';
-          };
-        }) self;
+      }) self;
     };
 }
