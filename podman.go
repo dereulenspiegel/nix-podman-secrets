@@ -53,7 +53,7 @@ func createPodmanSecret(secretName string) error {
 		"create",
 		"--label", "source=nix",
 		"--driver", "shell",
-		"driver-opts", fmt.Sprintf("delete='%s noop',list='%s noop',lookup='%s lookup %s',store='%s noop'",
+		"--driver-opts", fmt.Sprintf("delete='%s noop',list='%s noop',lookup='%s lookup %s',store='%s noop'",
 			nixPodmanSecretsBin,
 			nixPodmanSecretsBin,
 			nixPodmanSecretsBin,
