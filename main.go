@@ -12,6 +12,8 @@ const (
 	CMD_LOOKUP   = "lookup"
 	CMD_NOOP     = "noop"
 	CMD_POPULATE = "populate"
+
+	ENV_DEBUG = "NIX_PODMAN_SECRETS_DEBUG"
 )
 
 func main() {
@@ -32,6 +34,11 @@ func main() {
 	}
 	cmdName := os.Args[1]
 
+	debug := false
+	if os.Getenv(ENV_DEBUG) == "true" {
+		debug = true
+	}
+
 	switch cmdName {
 	case CMD_LOOKUP:
 		if len(os.Args) < 3 {
@@ -42,7 +49,7 @@ func main() {
 	case CMD_NOOP:
 		noop()
 	case CMD_POPULATE:
-		populatePodmanSecretsDB(NIX_SECRET_DIR)
+		populatePodmanSecretsDB(NIX_SECRET_DIR, debug)
 	default:
 		panic(fmt.Errorf("unsupported command %s", cmdName))
 	}

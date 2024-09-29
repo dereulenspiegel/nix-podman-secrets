@@ -17,7 +17,7 @@ const (
 
 func listPodmanSecrets() (secretNames []string, err error) {
 	cmd := exec.Command(podmanBin,
-		"secret", "list", "--format '{{ .Name }}'")
+		"secret", "list", "--format", "{{ .Name }}")
 	outBuf := &bytes.Buffer{}
 	errBuf := &bytes.Buffer{}
 	cmd.Stdout = outBuf
