@@ -31,7 +31,7 @@
         environment.systemPackages = [ self.packages.${pkgs.system}.default ];
 
         system.activationScripts.syncNixPodmanSecrets = ''
-          /run/current-system/sw/bin/nix-podman-secrets populate
+          ${self.packages.x86_64-linux.nix-podman-secrets.outPath}/bin/nix-podman-secrets populate
         '';
 
       }) self;
