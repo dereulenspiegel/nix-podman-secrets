@@ -20,7 +20,9 @@ func populatePodmanSecretsDB(nixsecretsPath string, debug bool) {
 	for _, secretName := range podmanSecrets {
 		if !sliceContains(nixSecretNames, secretName) {
 			debugLog(debug, "Deleting secrets %s from podman", secretName)
-			deletePodmanSecret(secretName)
+			if err := deletePodmanSecret(secretName); err != nil {
+				panic(fmt.Errorf("failed to delete secret %s: %w", secretName, err))
+			}
 		}
 	}
 
@@ -28,7 +30,9 @@ func populatePodmanSecretsDB(nixsecretsPath string, debug bool) {
 	for _, secretName := range nixSecretNames {
 		if !sliceContains(podmanSecrets, secretName) {
 			debugLog(debug, "Creating secret %s in podman", secretName)
-			createPodmanSecret(secretName)
+			if err := createPodmanSecret(secretName); err != nil {
+				panic(fmt.Errorf("failed to create secret %s: %w", secretName, err))
+			}
 		}
 	}
 	debugLog(debug, "Finished syncing nix secrets to podman")
@@ -36,7 +40,7 @@ func populatePodmanSecretsDB(nixsecretsPath string, debug bool) {
 
 func debugLog(debug bool, message string, vals ...interface{}) {
 	if debug {
-		fmt.Printf(message, vals...)
+		fmt.Printf(message+"\n", vals...)
 	}
 }
 
