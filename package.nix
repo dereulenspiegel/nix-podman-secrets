@@ -9,6 +9,14 @@ buildGoModule {
 
   vendorHash = null;
 
+  subPackages = [
+    "cmd/nix-podman-secret-delete"
+    "cmd/nix-podman-secret-list"
+    "cmd/nix-podman-secret-lookup"
+    "cmd/nix-podman-secret-populate"
+    "cmd/nix-podman-secret-store"
+  ];
+
   #outputs = [ "bin" ];
 
   meta = {

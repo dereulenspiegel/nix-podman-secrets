@@ -1,17 +1,17 @@
-package main
+package internal
 
 import (
 	"fmt"
 )
 
-func populatePodmanSecretsDB(nixsecretsPath string, debug bool) {
+func PopulatePodmanSecretsDB(nixsecretsPath string, debug bool) {
 	debugLog(debug, "Listing nix secrets")
-	nixSecretNames, err := listNixSecrets(nixsecretsPath)
+	nixSecretNames, err := ListNixSecrets(nixsecretsPath)
 	if err != nil {
 		panic(fmt.Errorf("failed to list nix secret names: %w", err))
 	}
 	debugLog(debug, "Listing podman secrets")
-	podmanSecrets, err := listPodmanSecrets()
+	podmanSecrets, err := listPodmanSecrets(nixsecretsPath)
 	if err != nil {
 		panic(fmt.Errorf("failed to list podman secrets: %w", err))
 	}

@@ -30,8 +30,9 @@
       nixosModules.default = (self: { lib, config, pkgs, ... }: {
         environment.systemPackages = [ self.packages.${pkgs.system}.default ];
 
-        system.activationScripts.syncNixPodmanSecrets = ''
-          ${self.packages.x86_64-linux.nix-podman-secrets.outPath}/bin/nix-podman-secrets populate
+        system.activationScripts.syncNixPodmanSecrets = (lib.stringAfter ([ "specialfs" "users" "groups" "setupSecrets" ])) ''
+          [ -e /run/current-system ] || echo "populating podman secrets from nix secrets"
+          ${self.packages.x86_64-linux.nix-podman-secrets.outPath}/bin/nix-podman-secret-populate
         '';
 
       }) self;
