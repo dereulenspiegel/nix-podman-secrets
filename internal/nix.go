@@ -35,7 +35,9 @@ func ListNixSecrets(secretsDir string) (secretNames []string, err error) {
 		return nil, fmt.Errorf("failed to read secrets dir: %w", err)
 	}
 	for _, secretFile := range secretFiles {
-		secretNames = append(secretNames, secretFile.Name())
+		if !secretFile.IsDir() {
+			secretNames = append(secretNames, secretFile.Name())
+		}
 	}
 	return
 }

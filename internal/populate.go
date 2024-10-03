@@ -6,6 +6,9 @@ import (
 
 func PopulatePodmanSecretsDB(nixsecretsPath string, debug bool) {
 	debugLog(debug, "Listing nix secrets")
+	if err := EnsureMappingDirExists(nixsecretsPath); err != nil {
+		panic(err)
+	}
 	nixSecretNames, err := ListNixSecrets(nixsecretsPath)
 	if err != nil {
 		panic(fmt.Errorf("failed to list nix secret names: %w", err))
