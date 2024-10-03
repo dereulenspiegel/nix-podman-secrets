@@ -4,9 +4,9 @@ import (
 	"fmt"
 )
 
-func PopulatePodmanSecretsDB(nixsecretsPath string, debug bool) {
+func PopulatePodmanSecretsDB(nixsecretsPath, mappindDirPath string, debug bool) {
 	debugLog(debug, "Listing nix secrets")
-	if err := EnsureMappingDirExists(nixsecretsPath); err != nil {
+	if err := EnsureMappingDirExists(mappindDirPath); err != nil {
 		panic(err)
 	}
 	nixSecretNames, err := ListNixSecrets(nixsecretsPath)
@@ -14,7 +14,7 @@ func PopulatePodmanSecretsDB(nixsecretsPath string, debug bool) {
 		panic(fmt.Errorf("failed to list nix secret names: %w", err))
 	}
 	debugLog(debug, "Listing podman secrets")
-	podmanSecrets, err := listPodmanSecrets(nixsecretsPath)
+	podmanSecrets, err := listPodmanSecrets(mappindDirPath)
 	if err != nil {
 		panic(fmt.Errorf("failed to list podman secrets: %w", err))
 	}

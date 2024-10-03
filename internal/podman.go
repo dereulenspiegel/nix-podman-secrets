@@ -15,9 +15,8 @@ const (
 	nixPodmanSecretsBin = "nix-podman-secret"
 )
 
-func listPodmanSecrets(nixSecretDir string) (secretNames []string, err error) {
+func listPodmanSecrets(mappingDirPath string) (secretNames []string, err error) {
 
-	mappingDirPath := filepath.Join(nixSecretDir, MAPPING_SUBDIR)
 	files, err := os.ReadDir(mappingDirPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list entries in mapping dir: %w", err)

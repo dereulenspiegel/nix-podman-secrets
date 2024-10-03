@@ -8,15 +8,14 @@ import (
 
 const (
 	NIX_SECRET_DIR = "/run/secrets"
-	MAPPING_SUBDIR = "podman-mapping"
+	MAPPING_DIR    = "/var/lib/containers/storage/secrets/nix-mapping"
 
 	ENV_VAR_SECRET_ID = "SECRET_ID"
 )
 
-func EnsureMappingDirExists(nixSecretDir string) error {
-	mappingDirPath := filepath.Join(nixSecretDir, MAPPING_SUBDIR)
+func EnsureMappingDirExists(mappingDirPath string) error {
 	if stat, err := os.Stat(mappingDirPath); os.IsNotExist(err) {
-		if err := os.Mkdir(mappingDirPath, 0700); err != nil {
+		if err := os.MkdirAll(mappingDirPath, 0700); err != nil {
 			return fmt.Errorf("failed to create mapping dir: %w", err)
 		}
 	} else if !stat.IsDir() {
