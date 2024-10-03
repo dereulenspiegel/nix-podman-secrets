@@ -12,7 +12,7 @@ import (
 func main() {
 	internal.WrapMain(func() {
 		secretId := os.Getenv("SECRET_ID")
-		storeSecret(os.Stdin, secretId, internal.MAPPING_DIR, internal.NIX_SECRET_DIR)
+		storeSecret(os.Stdin, secretId, internal.NIX_SECRET_DIR, internal.MAPPING_DIR)
 	})
 }
 
