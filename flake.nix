@@ -32,7 +32,7 @@
 
         system.activationScripts.syncNixPodmanSecrets = (lib.stringAfter ([ "specialfs" "users" "groups" "setupSecrets" ])) ''
           [ -e /run/current-system ] || echo "populating podman secrets from nix secrets"
-          PATH=$PATH:${lib.makeBinPath [ pkgs.podman ]} ${self.packages.x86_64-linux.nix-podman-secrets.outPath}/bin/nix-podman-secret-populate
+          PATH=$PATH:${lib.makeBinPath [ pkgs.podman pkgs.nix-podman-secrets ]} ${self.packages.x86_64-linux.nix-podman-secrets.outPath}/bin/nix-podman-secret-populate
         '';
 
       }) self;
