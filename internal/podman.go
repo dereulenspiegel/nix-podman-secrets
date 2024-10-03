@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	podmanBin = "/run/current-system/sw/bin/podman"
+	podmanBin = "podman"
 
 	nixPodmanSecretsBin = "/run/current-system/sw/bin/nix-podman-secret"
 )
