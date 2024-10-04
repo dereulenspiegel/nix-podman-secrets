@@ -16,6 +16,8 @@ inputs = {
 ```
 
 and add the module to you nixosSystem module list, i.e.
+
+```
     nixosConfigurations = {
         podman-host = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
