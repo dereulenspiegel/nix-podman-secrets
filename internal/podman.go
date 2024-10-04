@@ -15,6 +15,9 @@ const (
 	nixPodmanSecretsBin = "nix-podman-secret"
 )
 
+type DeletePodmanSecretFunc func(string) error
+type CreatePodmanSecretFunc func(string) error
+
 func listPodmanSecrets(mappingDirPath string) (secretNames []string, err error) {
 
 	files, err := os.ReadDir(mappingDirPath)
@@ -33,7 +36,7 @@ func listPodmanSecrets(mappingDirPath string) (secretNames []string, err error) 
 	return
 }
 
-func deletePodmanSecret(secretName string) error {
+func DeletePodmanSecretImpl(secretName string) error {
 	cmd := exec.Command(podmanBin, "secret", "delete", secretName)
 	errBuf := &bytes.Buffer{}
 	cmd.Stderr = errBuf
@@ -44,7 +47,7 @@ func deletePodmanSecret(secretName string) error {
 	return nil
 }
 
-func createPodmanSecret(secretName string) error {
+func CreatePodmanSecretImpl(secretName string) error {
 	cmd := exec.Command(podmanBin,
 		"secret",
 		"create",

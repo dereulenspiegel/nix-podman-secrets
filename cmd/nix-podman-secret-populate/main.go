@@ -16,6 +16,11 @@ func main() {
 		debug = true
 	}
 	internal.WrapMain(func() {
-		internal.PopulatePodmanSecretsDB(internal.NIX_SECRET_DIR, internal.MAPPING_DIR, debug)
+		internal.PopulatePodmanSecretsDB(
+			internal.NIX_SECRET_DIR,
+			internal.MAPPING_DIR,
+			internal.DeletePodmanSecretImpl,
+			internal.CreatePodmanSecretImpl,
+			debug)
 	})
 }
