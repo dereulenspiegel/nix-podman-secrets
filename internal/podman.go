@@ -27,11 +27,13 @@ func listPodmanSecrets(mappingDirPath string) (secretNames []string, err error) 
 
 	for _, secretFile := range files {
 		secretPath := filepath.Join(mappingDirPath, secretFile.Name())
-		secretNameBytes, err := os.ReadFile(secretPath)
+		actualSecretFile, err := filepath.EvalSymlinks(secretPath)
 		if err != nil {
-			return nil, fmt.Errorf("failed to read secret name from file %s: %w", secretPath, err)
+			return nil, fmt.Errorf("failed to evaluate symlink %s: %w", secretPath, err)
 		}
-		secretNames = append(secretNames, strings.TrimSpace(string(secretNameBytes)))
+		secretName := filepath.Base(actualSecretFile)
+
+		secretNames = append(secretNames, strings.TrimSpace(secretName))
 	}
 	return
 }
