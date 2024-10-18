@@ -37,7 +37,7 @@ func listPodmanSecrets(mappingDirPath string) (secretNames []string, err error) 
 }
 
 func DeletePodmanSecretImpl(secretName string) error {
-	cmd := exec.Command(podmanBin, "secret", "delete", secretName)
+	cmd := exec.Command(podmanBin, "secret", "rm", secretName)
 	errBuf := &bytes.Buffer{}
 	cmd.Stderr = errBuf
 	err := cmd.Run()
