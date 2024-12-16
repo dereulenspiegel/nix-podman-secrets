@@ -14,9 +14,16 @@ func PopulatePodmanSecretsDB(nixsecretsPath, mappingDirPath string, deletePodman
 		panic(fmt.Errorf("failed to list nix secret names: %w", err))
 	}
 	debugLog(debug, "Listing podman secrets")
-	podmanSecrets, err := listPodmanSecrets(mappingDirPath)
+	podmanSecrets, removedSecretIDs, err := listPodmanSecrets(mappingDirPath)
 	if err != nil {
 		panic(fmt.Errorf("failed to list podman secrets: %w", err))
+	}
+
+	for _, secretID := range removedSecretIDs {
+		debugLog(debug, "Deleting secret with id %s from podman", secretID)
+		if err := deletePodmanSecret(secretID); err != nil {
+			panic(fmt.Errorf("failed to remove secret by id (%s): %w", secretID, err))
+		}
 	}
 
 	// Check if we need to remove secrets

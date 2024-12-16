@@ -18,18 +18,19 @@ const (
 type DeletePodmanSecretFunc func(string) error
 type CreatePodmanSecretFunc func(string) error
 
-func listPodmanSecrets(mappingDirPath string) (secretNames []string, err error) {
+func listPodmanSecrets(mappingDirPath string) (secretNames []string, removedSecretIDs []string, err error) {
 
 	files, err := os.ReadDir(mappingDirPath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list entries in mapping dir: %w", err)
+		return nil, nil, fmt.Errorf("failed to list entries in mapping dir: %w", err)
 	}
 
 	for _, secretFile := range files {
 		secretPath := filepath.Join(mappingDirPath, secretFile.Name())
 		actualSecretFile, err := filepath.EvalSymlinks(secretPath)
 		if err != nil {
-			return nil, fmt.Errorf("failed to evaluate symlink %s: %w", secretPath, err)
+			removedSecretIDs = append(removedSecretIDs, secretFile.Name())
+			continue
 		}
 		secretName := filepath.Base(actualSecretFile)
 
