@@ -16,11 +16,7 @@ func main() {
 }
 
 func deleteSecret(mappingDir, secretId string) {
-	pathToDelete, err := filepath.EvalSymlinks(filepath.Join(mappingDir, secretId))
-	if err != nil {
-		panic(fmt.Errorf("failed to evaluate mapping file path: %w", err))
-	}
-	if err := os.Remove(pathToDelete); err != nil {
-		panic(fmt.Errorf("failed to delete secret mapping: %w", err))
+	if err := os.Remove(filepath.Join(mappingDir, secretId)); err != nil {
+		panic(fmt.Errorf("failed to remove mapping symlink for secret id %s: %w", secretId, err))
 	}
 }
