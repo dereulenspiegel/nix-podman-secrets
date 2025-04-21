@@ -1,9 +1,15 @@
 {
   description = "Use nix secrets in podman";
 
-  inputs = { nixpkgs = { url = "github:nixos/nixpkgs/nixos-24.05"; }; };
+  inputs = {
+    nixpkgs = { url = "github:nixos/nixpkgs/nixos-24.05"; };
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
 
-  outputs = inputs@{ nixpkgs, self, ... }:
+  outputs = inputs@{ nixpkgs, self, sops-nix, ... }:
     let
       systems = [ "x86_64-linux" "aarch64-linux" ];
 
@@ -36,27 +42,41 @@
             };
           };
 
+          imports = [ sops-nix.nixosModules.sops ];
+
           config.environment.systemPackages =
             [ self.packages.${pkgs.system}.default ];
 
-          config.system.activationScripts.syncNixPodmanSecrets =
-            (lib.stringAfter ([
+          config.system.activationScripts.syncNixPodmanSecrets = {
+            deps = [
               "specialfs"
               "users"
               "groups"
               "setupSecrets"
-            ])) ''
+              "binsh"
+              "usrbinenv"
+            ];
+            text = ''
               [ -e /run/current-system ] || echo "populating podman secrets from nix secrets"
-              PATH=$PATH:${
-                lib.makeBinPath [
-                  config.nix-podman-secrets.podmanPackage
-                  self.packages.${pkgs.system}.nix-podman-secrets
-                ]
-              } ${
-                self.packages.${pkgs.system}.nix-podman-secrets.outPath
-              }/bin/nix-podman-secret-populate
+               PATH=$PATH:${
+                 lib.makeBinPath [
+                   config.nix-podman-secrets.podmanPackage
+                   self.packages.${pkgs.system}.nix-podman-secrets
+                 ]
+               } ${
+                 self.packages.${pkgs.system}.nix-podman-secrets.outPath
+               }/bin/nix-podman-secret-populate
             '';
+          };
 
         }) self;
+
+      checks = forAllSystems (system:
+        let
+          checkArgs = {
+            pkgs = nixpkgs.legacyPackages.${system};
+            inherit self;
+          };
+        in { main = import ./checks/main.nix checkArgs; });
     };
 }

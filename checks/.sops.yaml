@@ -1,0 +1,5 @@
+keys:
+  - &check-server age1d8ajl2sh690pe5xzcflmwkcxj6ehqjh6cjc9vdkz2jstsptl6fvsma68lq
+creation_rules:
+  - path_regex: .*\.secret\.yaml
+    age: *check-server
