@@ -50,26 +50,21 @@
           config.environment.systemPackages =
             [ self.packages.${pkgs.system}.default ];
 
-          config.system.activationScripts.syncNixPodmanSecrets = {
-            deps = [
-              "specialfs"
-              "users"
-              "groups"
-              "setupSecrets"
-              "binsh"
-              "usrbinenv"
+          config.systemd.services.sync-nix-podman-secrets = {
+            enable = true;
+            before = [ "podman.service" ];
+            wantedBy = [ "multi-user.target" ];
+            path = [
+              config.nix-podman-secrets.podmanPackage
+              self.packages.${pkgs.system}.default
             ];
-            text = ''
-              [ -e /run/current-system ] || echo "populating podman secrets from nix secrets"
-               PATH=$PATH:${
-                 lib.makeBinPath [
-                   config.nix-podman-secrets.podmanPackage
-                   self.packages.${pkgs.system}.nix-podman-secrets
-                 ]
-               } ${
-                 self.packages.${pkgs.system}.nix-podman-secrets.outPath
-               }/bin/nix-podman-secret-populate
-            '';
+
+            serviceConfig = {
+              Type = "oneshot";
+              ExecStart = "${
+                  self.packages.${pkgs.system}.nix-podman-secrets.outPath
+                }/bin/nix-podman-secret-populate";
+            };
           };
 
         }) self;

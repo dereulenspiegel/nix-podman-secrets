@@ -23,12 +23,27 @@
           secrets = { test = { sopsFile = ./test.secret.yaml; }; };
         };
 
+        virtualisation.containers.enable = true;
+        virtualisation = {
+          podman = {
+            enable = true;
+
+            # Create a `docker` alias for podman, to use it as a drop-in replacement
+            dockerCompat = true;
+
+            # Required for containers under podman-compose to be able to talk to each other.
+            defaultNetwork.settings.dns_enabled = true;
+          };
+        };
+
         system.stateVersion = "24.11";
       };
   };
 
   testScript = ''
     start_all()
-
+    machine.wait_for_unit("multi-user.target")
+    machine.succeed("podman secret list")
+    machine.succeed("podman secret exists test")
   '';
 }
